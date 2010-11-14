@@ -137,8 +137,8 @@ class DatabaseClass:
 		return(ret)
 
 
-	#########################################
-	def insert(table, dict = None, **kwargs):
+	###############################################
+	def insert(self, table, dict = None, **kwargs):
 		'''Insert a row into the specified table, using the keyword arguments
 		or dictionary elements as the fields.  If a dictionary is specified
 		with keys matching kwargs, then the dictionary takes precedence.
@@ -151,9 +151,10 @@ class DatabaseClass:
 			INSERT INTO users ( name, uid, password ) VALUES ( 'Sean', 10, 'xyzzy')
 		'''
 		if dict is not None: kwargs.update(dict)
+		values = kwargs.values()
 		cmd = ('INSERT INTO %s ( %s ) VALUES ( %s )'
-				% ( table, ','.join(dict.keys()),
-				','.join(['%s'] * len(dict.values)), ))
+				% ( table, ','.join(kwargs.keys()),
+				','.join(['%s'] * len(values)), ))
 		self.query(cmd, *values)
 
 
