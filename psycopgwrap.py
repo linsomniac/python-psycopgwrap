@@ -34,7 +34,7 @@ Examples:
 Other examples:
 
 	db.insert('users', name = 'Al Bert')
-	db.dictinsert('users', { name : 'Al Bert' })
+	db.insert('users', { name : 'Al Bert' })
 	user_count = db.queryone('SELECT COUNT(*) FROM users')[0]
 
 	if db.queryone("SELECT * FROM users WHERE name = 'Al Bert'"):
@@ -137,10 +137,12 @@ class DatabaseClass:
 		return(ret)
 
 
-	##################################
-	def insert(self, table, **kwargs):
+	#########################################
+	def insert(table, dict = None, **kwargs):
 		'''Insert a row into the specified table, using the keyword arguments
-		as the fields.  For example:
+		or dictionary elements as the fields.  If a dictionary is specified
+		with keys matching kwargs, then the dictionary takes precedence.
+		For example:
 
 		   insert('users', name = 'Sean', uid = 10, password = 'xyzzy')
 
@@ -148,20 +150,10 @@ class DatabaseClass:
 
 			INSERT INTO users ( name, uid, password ) VALUES ( 'Sean', 10, 'xyzzy')
 		'''
-		return(self.dictinsert(table, kwargs))
-
-
-	##################################
-	def dictinsert(self, table, dict):
-		'''Insert values into the specified table using keys from the
-		dictionary as the field names and the values as what to insert.'''
-		values = []
-		args = []
-		for key, value in dict.items():
-			values.append(value)
-			args.append(key)
+		if dict is not None: kwargs.update(dict)
 		cmd = ('INSERT INTO %s ( %s ) VALUES ( %s )'
-				% ( table, ','.join(args), ','.join(['%s'] * len(values)), ))
+				% ( table, ','.join(dict.keys()),
+				','.join(['%s'] * len(dict.values)), ))
 		self.query(cmd, *values)
 
 
@@ -245,7 +237,7 @@ if __name__ == '__main__':
 			for i in range(200, 250):
 				db.insert('indexes', value = i)
 			for i in range(300, 369):
-				db.dictinsert('indexes',  { 'value' : i })
+				db.insert('indexes',  { 'value' : i })
 
 			count = db.queryone("SELECT COUNT(*) FROM indexes "
 					"WHERE value >= 200 AND value < 300")[0]
