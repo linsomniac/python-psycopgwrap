@@ -6,8 +6,12 @@ No rights reserved.
 Please submit bugs/fixes at:
    http://github.com/linsomniac/python-psycopgwrap
 
-A wrapper around psycopg2 to make common things easier.  It really doesn't 
-follow the dbapi.  Here are a few of the features:
+A wrapper around psycopg2 to make common things easier.  It really doesn't
+follow the DB-API.  It's mostly for me to experiment with other ways of
+talking to the database than the standard DB-API.  I've used this in a
+number of projects.  It's primary focus is convenience.
+
+Here are a few of the features:
 
    Query results can be accessed as a dictionary of columns.
 
