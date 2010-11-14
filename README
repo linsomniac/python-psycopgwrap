@@ -4,47 +4,48 @@ Placed in the public domain.
 No rights reserved.
 
 Please submit bugs/fixes at:
-	http://github.com/linsomniac/python-psycopgwrap
+   http://github.com/linsomniac/python-psycopgwrap
 
 A wrapper around psycopg2 to make common things easier.  It really doesn't 
 follow the dbapi.  Here are a few of the features:
 
-	Query results can be accessed as a dictionary of columns.
+   Query results can be accessed as a dictionary of columns.
 
-	Queries return iterators so you can do things like "for row in query"
-	without loading the entire dataset into your code.
+   Queries return indexable iterators with dictionary syntax, so you can
+   do things like "for row in query", and "query(cmd)[0]".  Note that
+   indexes can only be larger than or equal to the last index.
 
-	Query arguments are passed as discrete arguments, not as a tuple.
-	Passing as a tuple always makes me want to do a "%" and if I accidentally
-	do that it can open up a SQL injection.
+   Query arguments are passed as discrete arguments, not as a tuple.
+   Passing as a tuple always makes me want to do a "%" and if I accidentally
+   do that it can open up a SQL injection.
 
-	There's an "insert" helper that takes a table name and keyword arguments.
-	Similarly there's a "dictinsert" helper that takes a dictionary of
-	row:values.
+   There's an "insert" helper that takes a table name and keyword arguments.
+   Similarly there's a "dictinsert" helper that takes a dictionary of
+   row:values.
 
 Examples:
 
-	from psycopgwrap import Database as db
-	db.connect('dbname=testdb')
-	user = db.query('SELECT * FROM users WHERE name = %s', name)
-	if user == None:
-		print 'No such user "%s"' % name
-	print 'User id: %s' % user['id']
-	for row in db.query('SELECT * FROM ptinvoicestatus LIMIT 1'):
-		print 'id:', row['id']
-	for row in db.query('SELECT * FROM ptinvoicestatus WHERE id = %s', id):
-		print 'id:', row['id']
-	try:
-		db.commit()
-	except:
-		db.rollback()
-	
+   from psycopgwrap import Database as db
+   db.connect('dbname=testdb')
+   user = db.query('SELECT * FROM users WHERE name = %s', name)
+   if user == None:
+      print 'No such user "%s"' % name
+   print 'User id: %s' % user['id']
+   for row in db.query('SELECT * FROM ptinvoicestatus LIMIT 1'):
+      print 'id:', row['id']
+   for row in db.query('SELECT * FROM ptinvoicestatus WHERE id = %s', id):
+      print 'id:', row['id']
+   try:
+      db.commit()
+   except:
+      db.rollback()
+   
 Other examples:
 
-	db.insert('users', name = 'Al Bert')
-	db.dictinsert('users', { name : 'Al Bert' })
-	user_count = db.queryone('SELECT COUNT(*) FROM users')[0]
+   db.insert('users', name = 'Al Bert')
+   db.dictinsert('users', { name : 'Al Bert' })
+   user_count = db.queryone('SELECT COUNT(*) FROM users')[0]
 
-	if db.queryone("SELECT * FROM users WHERE name = 'Al Bert'"):
-		print 'Al is in the house'
-	else: print 'No such user'
+   if db.queryone("SELECT * FROM users WHERE name = 'Al Bert'"):
+      print 'Al is in the house'
+   else: print 'No such user'
