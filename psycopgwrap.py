@@ -71,7 +71,9 @@ class CursorHelper(object):
 	##################
 	def __del__(self):
 		if self.cursor:
-			self.cursor.close()
+			#  cursor is sometimes already closed
+			try: self.cursor.close()
+			except InterfaceError: pass
 			self.cursor = None
 
 
