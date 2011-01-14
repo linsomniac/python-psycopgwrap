@@ -21,7 +21,7 @@ Examples:
 	user = db.query('SELECT * FROM users WHERE name = %s', name)
 	if user == None:
 		print 'No such user "%s"' % name
-	print 'User id: %s' % user.id
+	print 'User id: %s' % user.id   #  or user._id
 	for row in db.query('SELECT * FROM status WHERE id = %s', 500):
 		print 'id:', row.['id']
 	
@@ -47,7 +47,8 @@ from psycopg2 import ProgrammingError, InterfaceError
 class RowHelper(list):
 	'''Helper for the rows that allows for accessing the database row items
 	as either a dictionary (row['columnname']), a list (row[0], list(row)),
-	or an attribute (row.columnname).
+	or an attribute (row.columnname or row._columnname for disambiguation
+	from dictionary methods, etc...).
 	'''
 
 	########################
@@ -58,9 +59,20 @@ class RowHelper(list):
 
 	############################
 	def __getattr__(self, attr):
+		#  row object attributes override database columns
+		if hasattr(self._original_row_object, attr):
+			return getattr(self._original_row_object, attr)
+
+		#  database columns prefixed with an underscore
+		if attr.startswith('_') and self._original_row_object.has_key(attr[1:]):
+			return(self._original_row_object[attr[1:]])
+
+		#  database columns
 		if self._original_row_object.has_key(attr):
 			return(self._original_row_object[attr])
-		return getattr(self._original_row_object, attr)
+
+		#  this should raise an AttributeError
+		getattr(self._original_row_object, attr)
 
 	#############################
 	def __getitem__(self, index):
@@ -261,9 +273,9 @@ if __name__ == '__main__':
 			self.assertEqual(rows[0].value, 0)
 			self.assertEqual(rows[0].value, 0)
 			self.assertEqual(rows[1].value, 1)
-			self.assertEqual(rows[2].value, 2)
+			self.assertEqual(rows[2]._value, 2)
 			self.assertRaises(NotImplementedError, rows.__getitem__, 1)
-			self.assertEqual(rows[-4].value, 96)
+			self.assertEqual(rows[-4]._value, 96)
 			self.assertEqual(rows[-3].value, 97)
 			self.assertEqual(rows[-3].items(), [('value', 97)])
 

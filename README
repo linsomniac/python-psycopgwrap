@@ -38,7 +38,7 @@ Examples:
    user = db.query('SELECT * FROM users WHERE name = %s', name)
    if user == None:
       print 'No such user "%s"' % name
-   print 'User id: %s' % user.id
+   print 'User id: %s' % user.id        #  or user._id
    for row in db.query('SELECT * FROM status WHERE id = %s', 500):
       print 'id:', row.['id']
 
