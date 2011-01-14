@@ -21,28 +21,51 @@ Examples:
 	user = db.query('SELECT * FROM users WHERE name = %s', name)
 	if user == None:
 		print 'No such user "%s"' % name
-	print 'User id: %s' % user['id']
-	for row in db.query('SELECT * FROM ptinvoicestatus LIMIT 1'):
-		print 'id:', row['id']
-	for row in db.query('SELECT * FROM ptinvoicestatus WHERE id = %s', id):
-		print 'id:', row['id']
-	try:
-		db.commit()
-	except:
-		db.rollback()
+	print 'User id: %s' % user.id
+	for row in db.query('SELECT * FROM status WHERE id = %s', 500):
+		print 'id:', row.['id']
 	
 Other examples:
 
 	db.insert('users', name = 'Al Bert')
 	db.insert('users', { name : 'Al Bert' })
-	user_count = db.queryone('SELECT COUNT(*) FROM users')[0]
+
+	user_count = db.queryone('SELECT COUNT(*) FROM users')[0]  #  0-th column
 
 	if db.queryone("SELECT * FROM users WHERE name = 'Al Bert'"):
 		print 'Al is in the house'
 	else: print 'No such user'
+
+	try: db.commit()
+	except: db.rollback()
 '''
 
-from psycopg2 import ProgrammingError
+from psycopg2 import ProgrammingError, InterfaceError
+
+
+######################
+class RowHelper(list):
+	'''Helper for the rows that allows for accessing the database row items
+	as either a dictionary (row['columnname']), a list (row[0], list(row)),
+	or an attribute (row.columnname).
+	'''
+
+	########################
+	def __init__(self, row):
+		#  this is needed so that "[0]" and "list(rowhelper)" work
+		super(RowHelper, self).__init__(row)
+		self._original_row_object = row
+
+	############################
+	def __getattr__(self, attr):
+		if self._original_row_object.has_key(attr):
+			return(self._original_row_object[attr])
+		return getattr(self._original_row_object, attr)
+
+	#############################
+	def __getitem__(self, index):
+		#  this is needed so that "['key']" works
+		return self._original_row_object[index]
 
 
 ###########################
@@ -64,8 +87,13 @@ class CursorHelper(object):
 		if index < self.cursor.rownumber - 1:
 			raise NotImplementedError('Cannot get records except sequentially')
 		while index >= self.cursor.rownumber:
-			self.currentRecord = self.cursor.fetchone()
-			if not self.currentRecord: raise IndexError('list index out of range')
+			row = self.cursor.fetchone()
+			if not row:
+				self.currentRecord = None
+				raise IndexError('list index out of range')
+
+			record = RowHelper(row)
+			self.currentRecord = record
 		return(self.currentRecord)
 
 	##################
@@ -225,6 +253,19 @@ if __name__ == '__main__':
 			self.assertEqual(rows[-4]['value'], 96)
 			self.assertEqual(rows[-3]['value'], 97)
 			self.assertEqual(list(rows), [[98], [99]])
+
+		def test_Attributes(self):
+			db = self.db
+
+			rows = db.query('SELECT * FROM indexes ORDER BY value')
+			self.assertEqual(rows[0].value, 0)
+			self.assertEqual(rows[0].value, 0)
+			self.assertEqual(rows[1].value, 1)
+			self.assertEqual(rows[2].value, 2)
+			self.assertRaises(NotImplementedError, rows.__getitem__, 1)
+			self.assertEqual(rows[-4].value, 96)
+			self.assertEqual(rows[-3].value, 97)
+			self.assertEqual(rows[-3].items(), [('value', 97)])
 
 		def test_One(self):
 			db = self.db
