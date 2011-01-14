@@ -34,22 +34,20 @@ Examples:
    user = db.query('SELECT * FROM users WHERE name = %s', name)
    if user == None:
       print 'No such user "%s"' % name
-   print 'User id: %s' % user['id']
-   for row in db.query('SELECT * FROM ptinvoicestatus LIMIT 1'):
-      print 'id:', row['id']
-   for row in db.query('SELECT * FROM ptinvoicestatus WHERE id = %s', id):
-      print 'id:', row['id']
-   try:
-      db.commit()
-   except:
-      db.rollback()
-   
+   print 'User id: %s' % user.id
+   for row in db.query('SELECT * FROM status WHERE id = %s', 500):
+      print 'id:', row.['id']
+
 Other examples:
 
    db.insert('users', name = 'Al Bert')
-   db.dictinsert('users', { name : 'Al Bert' })
-   user_count = db.queryone('SELECT COUNT(*) FROM users')[0]
+   db.insert('users', { name : 'Al Bert' })
+
+   user_count = db.queryone('SELECT COUNT(*) FROM users')[0]  #  0-th column
 
    if db.queryone("SELECT * FROM users WHERE name = 'Al Bert'"):
       print 'Al is in the house'
    else: print 'No such user'
+
+   try: db.commit()
+   except: db.rollback()
