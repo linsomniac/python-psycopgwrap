@@ -13,11 +13,15 @@ number of projects.  It's primary focus is convenience.
 
 Here are a few of the features:
 
-   Query results can be accessed as a dictionary of columns.
+   Query results can be accessed as a dictionary of columns (row['id']).
 
-   Queries return indexable iterators with dictionary syntax, so you can
-   do things like "for row in query", and "query(cmd)[0]".  Note that
-   indexes can only be larger than or equal to the last index.
+   Query results can be accessed as attributes (row.id).
+
+   Query results can be accessed as lists (row[0]).
+
+   Queries return indexable iterators, so you can do things like "for
+   row in query", and "query(cmd)[0]".  Note that indexes can only be
+   larger than or equal to the last index.
 
    Query arguments are passed as discrete arguments, not as a tuple.
    Passing as a tuple always makes me want to do a "%" and if I accidentally
