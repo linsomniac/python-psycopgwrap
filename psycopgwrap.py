@@ -21,7 +21,7 @@ Examples:
 	user = db.query('SELECT * FROM users WHERE name = %s', name)
 	if user == None:
 		print 'No such user "%s"' % name
-	print 'User id: %s' % user.id   #  or user._id
+	print 'User id: %s' % user.id   #  or user.id_
 	for row in db.query('SELECT * FROM status WHERE id = %s', 500):
 		print 'id:', row.['id']
 	
@@ -47,7 +47,7 @@ from psycopg2 import ProgrammingError, InterfaceError
 class RowHelper(list):
 	'''Helper for the rows that allows for accessing the database row items
 	as either a dictionary (row['columnname']), a list (row[0], list(row)),
-	or an attribute (row.columnname or row._columnname for disambiguation
+	or an attribute (row.columnname or row.columnname_ for disambiguation
 	from dictionary methods, etc...).
 	'''
 
@@ -64,8 +64,8 @@ class RowHelper(list):
 			return getattr(self._original_row_object, attr)
 
 		#  database columns prefixed with an underscore
-		if attr.startswith('_') and self._original_row_object.has_key(attr[1:]):
-			return(self._original_row_object[attr[1:]])
+		if attr.endswith('_') and self._original_row_object.has_key(attr[:-1]):
+			return(self._original_row_object[attr[:-1]])
 
 		#  database columns
 		if self._original_row_object.has_key(attr):
